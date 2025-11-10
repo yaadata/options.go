@@ -1,0 +1,15 @@
+# github.com/google/go-cmp v0.6.0
+## explicit; go 1.13
+github.com/google/go-cmp/cmp
+github.com/google/go-cmp/cmp/internal/diff
+github.com/google/go-cmp/cmp/internal/flags
+github.com/google/go-cmp/cmp/internal/function
+github.com/google/go-cmp/cmp/internal/value
+# github.com/shoenig/test v1.12.2
+## explicit; go 1.18
+github.com/shoenig/test/interfaces
+github.com/shoenig/test/internal/assertions
+github.com/shoenig/test/internal/constraints
+github.com/shoenig/test/internal/util
+github.com/shoenig/test/must
+github.com/shoenig/test/wait
