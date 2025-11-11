@@ -25,3 +25,6 @@ format:
 
 test:
     go test ./...
+
+doc: 
+    go doc -http

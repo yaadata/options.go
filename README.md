@@ -213,7 +213,9 @@ Option and Result
 - Conversion:
   - [ ] `Transpose`
 
-## Testing
+## Commands
+
+### Test
 
 Run the test suite:
 
@@ -223,6 +225,22 @@ just test
 
 Each merge to main is validated on the last 2 major version of Go across
 Windows, Mac and Linux.
+
+### Docs
+
+View dows
+
+```bash
+just doc
+```
+
+### Lint
+
+Run the project linter
+
+```bash
+just lint
+```
 
 ## Contributing
 
