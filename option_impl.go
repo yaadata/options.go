@@ -1,5 +1,11 @@
 package optionsgo
 
+import "reflect"
+
+const (
+	_FAILED_UNWRAP = "failed to unwrap None value"
+)
+
 type option[T any] struct {
 	value *T
 }
@@ -30,7 +36,17 @@ func (o *option[T]) IsNoneOr(pred Predicate[T]) bool {
 }
 
 func (o *option[T]) Equal(other Option[T]) bool {
-	return o == other
+	if o.IsNone() && other.IsNone() || (o == other) {
+		return true
+	}
+	if o.IsSome() && other.IsSome() {
+		oValue := *o.value
+		otherValue := other.Unwrap()
+		if reflect.TypeOf(oValue).Comparable() {
+			return reflect.DeepEqual(oValue, otherValue)
+		}
+	}
+	return false
 }
 
 func (o *option[T]) Expect(msg string) T {
@@ -41,7 +57,7 @@ func (o *option[T]) Expect(msg string) T {
 }
 
 func (o *option[T]) Unwrap() T {
-	return o.Expect("failed to unwrap None value")
+	return o.Expect(_FAILED_UNWRAP)
 }
 
 func (o *option[T]) UnwrapOrElse(fn func() T) T {

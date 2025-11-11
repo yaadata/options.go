@@ -2,6 +2,7 @@ package optionsgo
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/shoenig/test/must"
@@ -54,7 +55,29 @@ func TestOption_None(t *testing.T) {
 		must.True(t, actual)
 	})
 
-	t.Run("Unwrap should panic", func(t *testing.T) {
+	t.Run("Equal is true between two None containers", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		optionA := None[string]()
+		optionB := None[string]()
+		// [A]ct
+		actual := optionA.Equal(optionB)
+		// [A]ssert
+		must.True(t, actual)
+	})
+
+	t.Run("Equal is false between None and Some containers", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		optionA := None[string]()
+		optionB := Some("other")
+		// [A]ct
+		actual := optionA.Equal(optionB)
+		// [A]ssert
+		must.False(t, actual)
+	})
+
+	t.Run("Expect should panic", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
 		msg := "test panic"
@@ -68,6 +91,21 @@ func TestOption_None(t *testing.T) {
 		val := None[string]()
 		// [A]ct
 		val.Expect(msg)
+	})
+
+	t.Run("Unwrap should panic", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		defer func() {
+			if r := recover(); r != nil {
+				must.Eq(t, _FAILED_UNWRAP, r.(string))
+			} else {
+				t.Error("expected a panic but none occurred")
+			}
+		}()
+		val := None[string]()
+		// [A]ct
+		val.Unwrap()
 	})
 
 	t.Run("UnwrapOrElse returns Else", func(t *testing.T) {
@@ -217,6 +255,46 @@ func TestOption_Some(t *testing.T) {
 		actual := opt.IsNoneOr(pred)
 		// [A]ssert
 		must.True(t, actual)
+	})
+
+	t.Run("Equal is true for two containers with the same value", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		optionA := Some(5)
+		optionB := Some(5)
+		// [A]ct
+		actual := optionA.Equal(optionB)
+		// [A]ssert
+		must.True(t, actual)
+	})
+
+	t.Run("Equal is true for exact same container with Non-Comparable Type", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		value := map[string]string{
+			"key": "value",
+		}
+		must.False(t, reflect.TypeOf(value).Comparable())
+		opt := Some(value)
+		// [A]ct
+		actual := opt.Equal(opt)
+		// [A]ssert
+		must.True(t, actual)
+	})
+
+	t.Run("Equal is false for different containers with the same Non-Comparable Type", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		value := map[string]string{
+			"key": "value",
+		}
+		must.False(t, reflect.TypeOf(value).Comparable())
+		optionA := Some(value)
+		optionB := Some(value)
+		// [A]ct
+		actual := optionA.Equal(optionB)
+		// [A]ssert
+		must.False(t, actual)
 	})
 
 	t.Run("Expect does not panic and returns the inner value", func(t *testing.T) {
