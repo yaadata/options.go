@@ -1,4 +1,8 @@
-# Validate tool versions match mise.toml
+VERSION := 'v0.1.0'
+
+version:
+  @echo {{VERSION}} 
+
 check-versions:
     #!/usr/bin/env bash
     set -euo pipefail
