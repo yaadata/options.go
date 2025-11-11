@@ -4,8 +4,6 @@ package optionsgo
 // It represents an optional value: every Option is either Some and contains a value,
 // or None and does not contain a value.
 //
-// Options are commonly used to represent the absence of a value without using nil.
-//
 // Example:
 //
 //	// Create an Option with a value
@@ -79,17 +77,18 @@ type Option[T any] interface {
 	IsNoneOr(pred Predicate[T]) bool
 
 	// Equal returns true if both options are equal.
-	// Two Some options are equal if their contained values are equal.
-	// Two None options are always equal.
-	// A Some and None option are never equal.
+	//
+	// Equality rules:
+	//  - Two None options are always equal
+	//  - A Some and None option are never equal
+	//  - Two Some options with comparable types are equal if their contained values are equal
+	//  - For non-comparable types, only the exact same Option instance equals itself
+	//  - Different Option instances with non-comparable types are never equal
 	//
 	// Example:
 	//	opt1 := Some("hello")
 	//	opt2 := Some("hello")
-	//	opt1.Equal(opt2) // returns true
-	//
-	//	opt3 := None[string]()
-	//	opt1.Equal(opt3) // returns false
+	//	opt1.Equal(opt2) // returns true (comparable type)
 	Equal(Option[T]) bool
 
 	// Expect returns the contained Some value.
