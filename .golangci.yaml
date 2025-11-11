@@ -1,0 +1,101 @@
+version: "2"
+
+linters:
+  settings:
+    copyloopvar:
+      check-alias: true
+    decorder:
+      # Required order of `type`, `const`, `var` and `func` declarations inside a file.
+      # Default: types before constants before variables before functions.
+      dec-order:
+        - const
+        - var
+        - type
+        - func
+      # If true, underscore vars (vars with "_" as the name) will be ignored at all checks.
+      # Default: false (underscore vars are not ignored)
+      ignore-underscore-vars: false
+      # If true, order of declarations is not checked at all.
+      # Default: true (disabled)
+      disable-dec-order-check: false
+      # If true, `init` func can be anywhere in file (does not have to be declared before all other functions).
+      # Default: true (disabled)
+      disable-init-func-first-check: false
+      # If true, multiple global `type`, `const` and `var` declarations are allowed.
+      # Default: true (disabled)
+      disable-dec-num-check: false
+      # If true, type declarations will be ignored for dec num check.
+      # Default: false (type statements are not ignored)
+      disable-type-dec-num-check: false
+      # If true, const declarations will be ignored for dec num check.
+      # Default: false (const statements are not ignored)
+      disable-const-dec-num-check: false
+      # If true, var declarations will be ignored for dec num check.
+      # Default: false (var statements are not ignored)
+      disable-var-dec-num-check: false
+    exhaustive:
+      # Program elements to check for exhaustiveness.
+      # Default: [ switch ]
+      check:
+        - switch
+      # Presence of "default" case in switch statements satisfies exhaustiveness,
+      # even if all enum members are not listed.
+      # Default: false
+      default-signifies-exhaustive: true
+      # Enum members matching the supplied regex do not have to be listed in
+      # switch statements to satisfy exhaustiveness.
+      # Default: ""
+      ignore-enum-members: ""
+      # Enum types matching the supplied regex do not have to be listed in
+      # switch statements to satisfy exhaustiveness.
+      # Default: ""
+      ignore-enum-types: ""
+      # Consider enums only in package scopes, not in inner scopes.
+      # Default: false
+      package-scope-only: true
+      # Only run exhaustive check on switches with "//exhaustive:enforce" comment.
+      # Default: false
+      explicit-exhaustive-switch: true
+      # Only run exhaustive check on map literals with "//exhaustive:enforce" comment.
+      # Default: false
+      explicit-exhaustive-map: true
+      # Switch statement requires default case even if exhaustive.
+      # Default: false
+      default-case-required: true
+
+formatters:
+  settings:
+    gofmt:
+      # Simplify code: gofmt with `-s` option.
+      # Default: true
+      simplify: false
+      # Apply the rewrite rules to the source before reformatting.
+      # https://pkg.go.dev/cmd/gofmt
+      # Default: []
+      rewrite-rules:
+        - pattern: 'interface{}'
+          replacement: 'any'
+        - pattern: 'a[b:len(a)]'
+          replacement: 'a[b:]'
+
+    goimports:
+      # A list of prefixes, which, if set, checks import paths
+      # with the given prefixes are grouped after 3rd-party packages.
+      # Default: []
+      local-prefixes:
+        - github.com/yaadata/optionsgo
+    golines:
+      # Target maximum line length.
+      # Default: 100
+      max-len: 120
+      # Length of a tabulation.
+      # Default: 4
+      tab-len: 2
+      # Shorten single-line comments.
+      # Default: false
+      shorten-comments: true
+      # Default: true
+      reformat-tags: true
+      # Split chained methods on the dots as opposed to the arguments.
+      # Default: true
+      chain-split-dots: true
