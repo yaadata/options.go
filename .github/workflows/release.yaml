@@ -1,0 +1,104 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    if: |
+      github.event.pull_request.merged == true && 
+      (startsWith(github.event.pull_request.title, 'RELEASE:') || 
+       startsWith(github.event.pull_request.title, 'release:'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract tag from PR title
+        id: extract_tag
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          TAG=$(echo "$PR_TITLE" | sed -E 's/^[Rr][Ee][Ll][Ee][Aa][Ss][Ee]: *//')
+          
+          if [ -z "$TAG" ]; then
+            echo "Error: No tag found in PR title"
+            exit 1
+          fi
+          
+          if ! [[ "$TAG" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Tag must be in format v0.0.0 or 0.0.0"
+            exit 1
+          fi
+          
+          if [[ ! "$TAG" =~ ^v ]]; then
+            TAG="v$TAG"
+          fi
+          
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Creating release for tag: $TAG"
+
+      - name: Check if tag exists
+        run: |
+          if git rev-parse "${{ steps.extract_tag.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Error: Tag ${{ steps.extract_tag.outputs.tag }} already exists"
+            exit 1
+          fi
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.extract_tag.outputs.tag }}
+          git push origin ${{ steps.extract_tag.outputs.tag }}
+
+      - name: Get previous tag
+        id: get_previous_tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${{ steps.extract_tag.outputs.tag }}^ 2>/dev/null || echo "")
+          echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+          echo "Previous tag: $PREVIOUS_TAG"
+
+      - name: Generate release notes
+        id: release_notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ steps.extract_tag.outputs.tag }}';
+            const previousTag = '${{ steps.get_previous_tag.outputs.previous_tag }}';
+            
+            const params = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag
+            };
+            
+            if (previousTag) {
+              params.previous_tag_name = previousTag;
+            }
+            
+            const { data: release } = await github.rest.repos.generateReleaseNotes(params);
+            return release.body;
+          result-encoding: string
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: '${{ steps.extract_tag.outputs.tag }}',
+              name: '${{ steps.extract_tag.outputs.tag }}',
+              body: ${{ toJSON(steps.release_notes.outputs.result) }},
+              draft: false,
+              prerelease: false
+            });
