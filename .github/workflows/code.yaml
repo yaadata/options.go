@@ -3,6 +3,13 @@ name: 'Library Validation'
 on:
   push:
     branches: [main]
+    paths: &applicable_paths
+      - '**/*.go' # This pattern matches any file ending with .go in any directory
+      - 'go.mod'
+      - 'go.sum'
+  pull_request:
+    types: [opened, synchronize ]
+    paths: *applicable_paths
   workflow_run:
     workflows: ["Lint PR"]
     types:
