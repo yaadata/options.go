@@ -22,14 +22,15 @@ jobs:
           # These are regex patterns auto-wrapped in `^ $`.
           # Default: https://github.com/commitizen/conventional-commit-types
           types: |
-            fix
-            feat
             chore
             ci
-            enhance
             docs
-            test
+            enhance
+            feat
+            fix
+            refactor
             release
+            test
           # Configure that a scope must always be provided.
           requireScope: false
           # If the PR contains one of these newline-delimited labels, the
