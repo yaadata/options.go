@@ -38,8 +38,6 @@ type Option[T any] interface {
 	//	result.IsNone() // returns true, returns the other None
 	And(other Option[T]) Option[T]
 
-	Chain() OptionChain[T]
-
 	// IsSome returns true if the option contains a value (is Some).
 	//
 	// Example:
@@ -232,4 +230,6 @@ type Option[T any] interface {
 	//	})
 	//	result.Equal(other) // returns true
 	OrElse(fn func() Option[T]) Option[T]
+
+	OptionChain[T]
 }
