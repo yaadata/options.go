@@ -1,4 +1,4 @@
-name: 'Library Validation'
+name: 'Go'
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - '**/*.go' # This pattern matches any file ending with .go in any directory
       - 'go.mod'
       - 'go.sum'
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize ]
     paths: *applicable_paths
   workflow_run:
