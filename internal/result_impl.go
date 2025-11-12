@@ -70,6 +70,13 @@ func (r *result[T]) IsErrorAnd(pred core.Predicate[error]) bool {
 	return false
 }
 
+func (r *result[T]) MapErr(fn func(inner error) error) core.Result[T] {
+	if r.IsError() {
+		return Err[T](fn(r.UnwrapErr()))
+	}
+	return r
+}
+
 func (r *result[T]) Unwrap() T {
 	if r.value == nil {
 		panic("cannot unwrap Err result to value")

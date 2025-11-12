@@ -2,6 +2,7 @@ package optionsgo_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/shoenig/test/must"
@@ -47,7 +48,6 @@ func TestResult_Error(t *testing.T) {
 	t.Run("IsErrorAnd returns true", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
-		// [A]rrange
 		msg := "error_message"
 		result := Err[string](errors.New(msg))
 		pred := func(err error) bool {
@@ -71,6 +71,33 @@ func TestResult_Error(t *testing.T) {
 		actual := result.IsErrorAnd(pred)
 		// [A]ssert
 		must.False(t, actual)
+	})
+
+	t.Run("MapErr returns transformed error", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Err[string](errors.New("A"))
+		// [A]ct
+		actual := result.MapErr(func(err error) error {
+			return fmt.Errorf("%s - B", err.Error())
+		})
+		// [A]ssert
+		must.True(t, actual.IsError())
+		must.Eq(t, "A - B", actual.UnwrapErr().Error())
+	})
+
+	t.Run("MapErr returns transformed error", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Ok(15)
+		// [A]ct
+		actual := result.MapErr(func(err error) error {
+			return fmt.Errorf("%s - B", err.Error())
+		})
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		must.Eq(t, 15, result.Unwrap())
+		must.False(t, actual.IsError())
 	})
 
 	t.Run("Unwrap panics", func(t *testing.T) {
@@ -300,7 +327,7 @@ func TestResult_Value(t *testing.T) {
 	})
 }
 
-func TestResultFromReturn(t *testing.T) {
+func TestResultMapFromReturn(t *testing.T) {
 	t.Parallel()
 	type Case struct {
 		val string

@@ -87,6 +87,24 @@ type Result[T any] interface {
 	//  value := result.Unwrap() // panics!
 	Unwrap() T
 
+	// MapErr applies a transformation function to the error if the Result is Err.
+	// If the Result is Ok, it returns the Result unchanged.
+	//
+	// Example:
+	//
+	//  result := Err[string](errors.New("A"))
+	//  transformed := result.MapErr(func(err error) error {
+	//      return fmt.Errorf("%s - B", err.Error())
+	//  })
+	//  transformed.UnwrapErr().Error() // "A - B"
+	//
+	//  result := Ok(15)
+	//  transformed := result.MapErr(func(err error) error {
+	//      return fmt.Errorf("transformed: %v", err)
+	//  })
+	//  transformed.Unwrap() // 15 (unchanged)
+	MapErr(func(error) error) Result[T]
+
 	// UnwrapErr returns the contained Err value.
 	// Panics if the result is Ok.
 	//

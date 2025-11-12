@@ -175,9 +175,6 @@ Option and Result
 **For Option[T]:**
 
 - Transformation:
-  - [ ] `Map`
-  - [ ] `MapOr`
-  - [ ] `MapOrElse`
   - [ ] `And`
   - [ ] `AndThen`
   - [ ] `Filter`
@@ -196,10 +193,6 @@ Option and Result
 **For Result[T]:**
 
 - Transformation:
-  - [ ] `Map`
-  - [ ] `MapErr`
-  - [ ] `MapOr`
-  - [ ] `MapOrElse`
   - [ ] `And`
   - [ ] `AndThen`
   - [ ] `Or`
