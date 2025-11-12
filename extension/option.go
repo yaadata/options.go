@@ -24,11 +24,8 @@ import (
 //	    return strings.Repeat("A", value)
 //	})
 //	transformed.IsNone() // true
-func OptionAndThen[T, V any](option core.Option[T], fn func(T) V) core.Option[V] {
-	if option.IsNone() {
-		return internal.None[V]()
-	}
-	return internal.Some(fn(option.Unwrap()))
+func OptionAndThen[T, V any](option core.Option[T], fn func(T) core.Option[V]) core.Option[V] {
+	return internal.OptionAndThen(option, fn)
 }
 
 // OptionMap transforms an Option[T] to Option[V] by applying a function to the contained value.
@@ -49,10 +46,7 @@ func OptionAndThen[T, V any](option core.Option[T], fn func(T) V) core.Option[V]
 //	})
 //	transformed.IsNone() // true
 func OptionMap[T, V any](option core.Option[T], fn func(value T) V) core.Option[V] {
-	if option.IsSome() {
-		return internal.Some(fn(option.Unwrap()))
-	}
-	return internal.None[V]()
+	return internal.OptionMap(option, fn)
 }
 
 // OptionMapOr transforms an Option[T] to Option[V] by applying a function to the contained value,
@@ -74,10 +68,7 @@ func OptionMap[T, V any](option core.Option[T], fn func(value T) V) core.Option[
 //	}, "DEFAULT")
 //	transformed.Unwrap() // "DEFAULT"
 func OptionMapOr[T, V any](option core.Option[T], fn func(value T) V, or V) core.Option[V] {
-	if option.IsSome() {
-		return internal.Some(fn(option.Unwrap()))
-	}
-	return internal.Some(or)
+	return internal.OptionMapOr(option, fn, or)
 }
 
 // OptionMapOrElse transforms an Option[T] to Option[V] by applying a function to the contained value,

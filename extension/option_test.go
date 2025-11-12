@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/shoenig/test/must"
+	"github.com/yaadata/optionsgo/core"
 	"github.com/yaadata/optionsgo/extension"
 	"github.com/yaadata/optionsgo/internal"
 )
@@ -13,8 +14,8 @@ func TestOptionAndThen(t *testing.T) {
 	t.Run("Some transforms to new type", func(t *testing.T) {
 		// [A]rrange
 		option := internal.Some(3)
-		fn := func(value int) string {
-			return strings.Repeat("A", value)
+		fn := func(value int) core.Option[string] {
+			return internal.Some(strings.Repeat("A", value))
 		}
 		// [A]ct
 		actual := extension.OptionAndThen(option, fn)
@@ -26,8 +27,8 @@ func TestOptionAndThen(t *testing.T) {
 	t.Run("None returns None", func(t *testing.T) {
 		// [A]rrange
 		option := internal.None[int]()
-		fn := func(value int) string {
-			return strings.Repeat("A", value)
+		fn := func(value int) core.Option[string] {
+			return internal.Some(strings.Repeat("A", value))
 		}
 		// [A]ct
 		actual := extension.OptionAndThen(option, fn)

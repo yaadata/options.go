@@ -25,6 +25,12 @@ func Some[T any](val T) core.Option[T] {
 	return &option[T]{value: &val}
 }
 
+func (o *option[T]) Chain() core.OptionChain[T] {
+	return &optionChain[T]{
+		option: o,
+	}
+}
+
 func (o *option[T]) And(other core.Option[T]) core.Option[T] {
 	if o.IsNone() {
 		return other
