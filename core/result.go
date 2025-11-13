@@ -13,27 +13,6 @@ type Result[T any] interface {
 	Expect(msg string) T
 
 	ExpectErr(msg string) error
-	// Ok returns Some(value) if the result is Ok, otherwise returns None.
-	//
-	// Example:
-	//
-	//  result := Ok("value")
-	//  opt := result.Ok() // Some("value")
-	//
-	//  result := Err[string](errors.New("error"))
-	//  opt := result.Ok() // None
-	Ok() Option[T]
-
-	// Err returns Some(error) if the result is Err, otherwise returns None.
-	//
-	// Example:
-	//
-	//  result := Err[string](errors.New("error_message"))
-	//  opt := result.Err() // Some(error)
-	//
-	//  result := Ok("value")
-	//  opt := result.Err() // None
-	Err() Option[error]
 
 	// IsOk returns true if the result is Ok.
 	//

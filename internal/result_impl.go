@@ -45,14 +45,14 @@ func (r *result[T]) Expect(msg string) T {
 	if r.IsError() {
 		panic(msg)
 	}
-	return r.Unwrap()
+	return *r.value
 }
 
 func (r *result[T]) ExpectErr(msg string) error {
 	if r.IsOk() {
 		panic(msg)
 	}
-	return r.UnwrapErr()
+	return r.err
 }
 
 func (r *result[T]) Err() core.Option[error] {
@@ -132,17 +132,11 @@ func (r *result[T]) OrElse(fn func(err error) core.Result[T]) core.Result[T] {
 }
 
 func (r *result[T]) Unwrap() T {
-	if r.value == nil {
-		panic("cannot unwrap Err result to value")
-	}
-	return *r.value
+	return r.Expect("cannot unwrap Err result to value")
 }
 
 func (r *result[T]) UnwrapErr() error {
-	if r.err == nil {
-		panic("cannot unwrap Ok result to error")
-	}
-	return r.err
+	return r.ExpectErr("cannot unwrap Ok result to error")
 }
 
 func (r *result[T]) UnwrapOr(val T) T {
