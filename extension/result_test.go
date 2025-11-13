@@ -11,6 +11,57 @@ import (
 	"github.com/yaadata/optionsgo/internal"
 )
 
+func TestResultMapFromReturn(t *testing.T) {
+	t.Parallel()
+	type Case struct {
+		val string
+	}
+	t.Run("nil return with error", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := errors.New("case a")
+		fn := func() (*Case, error) {
+			return nil, expected
+		}
+		// [A]ct
+		actual := extension.ResultFromReturn(fn())
+		// [A]ssert
+		must.True(t, actual.IsError())
+		must.Eq(t, expected, actual.UnwrapErr())
+	})
+
+	t.Run("value return with no error", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := &Case{
+			val: "EXPECTED",
+		}
+		fn := func() (*Case, error) {
+			return expected, nil
+		}
+		// [A]ct
+		actual := extension.ResultFromReturn(fn())
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		actualValue := actual.Unwrap()
+		must.Eq(t, expected, actualValue)
+	})
+
+	t.Run("nil value and err", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		fn := func() (*Case, error) {
+			return nil, nil
+		}
+		// [A]ct
+		actual := extension.ResultFromReturn(fn())
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		actualValue := actual.Unwrap()
+		must.Nil(t, actualValue)
+	})
+}
+
 func TestResultMap(t *testing.T) {
 	t.Parallel()
 	t.Run("Original result is Ok", func(t *testing.T) {
