@@ -99,7 +99,7 @@ func TestOption_None(t *testing.T) {
 		val.Expect(msg)
 	})
 
-	t.Run("Inspect should call fn on some", func(t *testing.T) {
+	t.Run("Inspect should call fn on none", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
 		opt := None[int]()

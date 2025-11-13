@@ -256,6 +256,25 @@ type OptionChain[T any] interface {
 	//	result.IsNone() // returns true
 	Filter(pred Predicate[T]) Option[T]
 
+	// Inspect calls the provided function with the contained value if the option is Some,
+	// and returns the option unchanged for method chaining.
+	// If the option is None, the function is not called.
+	//
+	// This method is useful for performing side effects (like logging or debugging)
+	// without consuming the option or breaking the method chain.
+	//
+	// Example:
+	//	opt := Some(5)
+	//	result := opt.Inspect(func(value int) {
+	//	    fmt.Printf("Value: %d\n", value)
+	//	})
+	//	result.Unwrap() // returns 5, and "Value: 5" was printed
+	//
+	//	opt := None[int]()
+	//	result := opt.Inspect(func(value int) {
+	//	    fmt.Printf("Value: %d\n", value)
+	//	})
+	//	result.IsNone() // returns true, nothing was printed
 	Inspect(fn func(value T)) Option[T]
 
 	// Map transforms the value in the chain by applying a function.
