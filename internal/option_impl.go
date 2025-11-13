@@ -157,3 +157,8 @@ func (o *option[T]) XOr(optb core.Option[T]) core.Option[T] {
 	}
 	return None[T]()
 }
+
+func (o *option[T]) Replace(value T) core.Option[T] {
+	o.value = &value
+	return o
+}

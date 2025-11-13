@@ -237,6 +237,17 @@ func TestOption_None(t *testing.T) {
 		must.True(t, actual.IsNone())
 	})
 
+	t.Run("Replace with value", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[int]()
+		// [A]ct
+		actual := opt.Replace(33)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 33, actual.Unwrap())
+	})
+
 	t.Run("XOr returns Some when other is Some", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
@@ -536,6 +547,17 @@ func TestOption_Some(t *testing.T) {
 		must.False(t, actual.Equal(other))
 		must.True(t, actual.Equal(opt))
 		must.Eq(t, EXPECTED, actual.Unwrap())
+	})
+
+	t.Run("Replace with another value", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some(5)
+		// [A]ct
+		actual := opt.Replace(33)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 33, actual.Unwrap())
 	})
 
 	t.Run("XOr returns None when other is Some", func(t *testing.T) {

@@ -306,6 +306,20 @@ type OptionChain[T any] interface {
 	//	result.Equal(other) // returns true
 	OrElse(fn func() Option[T]) Option[T]
 
+	// Replace replaces the actual value in the option with the provided value,
+	// regardless of whether the option is Some or None.
+	// Always returns Some with the new value.
+	//
+	// Example:
+	//	opt := None[int]()
+	//	result := opt.Replace(33)
+	//	result.Unwrap() // returns 33
+	//
+	//	opt := Some(5)
+	//	result := opt.Replace(33)
+	//	result.Unwrap() // returns 33
+	Replace(value T) Option[T]
+
 	// XOr returns Some if exactly one of self or optb is Some, otherwise returns None.
 	// This implements exclusive OR logic for Options.
 	//
