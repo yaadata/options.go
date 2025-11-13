@@ -41,6 +41,20 @@ func (r *result[T]) Ok() core.Option[T] {
 	return Some(*r.value)
 }
 
+func (r *result[T]) Expect(msg string) T {
+	if r.IsError() {
+		panic(msg)
+	}
+	return r.Unwrap()
+}
+
+func (r *result[T]) ExpectErr(msg string) error {
+	if r.IsOk() {
+		panic(msg)
+	}
+	return r.UnwrapErr()
+}
+
 func (r *result[T]) Err() core.Option[error] {
 	if r.err == nil {
 		return None[error]()
@@ -68,6 +82,20 @@ func (r *result[T]) IsErrorAnd(pred core.Predicate[error]) bool {
 		return pred(r.err)
 	}
 	return false
+}
+
+func (r *result[T]) Inspect(fn func(value T)) core.Result[T] {
+	if r.IsOk() {
+		fn(r.Unwrap())
+	}
+	return r
+}
+
+func (r *result[T]) InspectErr(fn func(err error)) core.Result[T] {
+	if r.IsError() {
+		fn(r.UnwrapErr())
+	}
+	return r
 }
 
 func (r *result[T]) Map(fn func(value T) any) core.Result[any] {

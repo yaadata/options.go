@@ -9,6 +9,10 @@ package core
 type Result[T any] interface {
 	ResultChain[T]
 	ResultToOption[T]
+
+	Expect(msg string) T
+
+	ExpectErr(msg string) error
 	// IsOk returns true if the result is Ok.
 	//
 	// Example:
@@ -114,6 +118,8 @@ type Result[T any] interface {
 }
 
 type ResultChain[T any] interface {
+	Inspect(fn func(value T)) Result[T]
+	InspectErr(fn func(err error)) Result[T]
 	Map(fn func(value T) any) Result[any]
 	// MapErr applies a transformation function to the error if the Result is Err.
 	// If the Result is Ok, it returns the Result unchanged.
