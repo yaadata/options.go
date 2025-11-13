@@ -225,6 +225,29 @@ func TestOption_None(t *testing.T) {
 		must.True(t, actual.IsSome())
 		must.True(t, actual.Equal(expected))
 	})
+
+	t.Run("XOr returns None when other is None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[string]()
+		other := None[string]()
+		// [A]ct
+		actual := opt.XOr(other)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("XOr returns Some when other is Some", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[string]()
+		other := Some("OTHER")
+		// [A]ct
+		actual := opt.XOr(other)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, "OTHER", actual.Unwrap())
+	})
 }
 
 func TestOption_Some(t *testing.T) {
@@ -514,6 +537,29 @@ func TestOption_Some(t *testing.T) {
 		must.True(t, actual.Equal(opt))
 		must.Eq(t, EXPECTED, actual.Unwrap())
 	})
+
+	t.Run("XOr returns None when other is Some", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some("ORIGINAL")
+		other := Some("OTHER")
+		// [A]ct
+		actual := opt.XOr(other)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("XOr returns Some when other is Some", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some("ORIGINAL")
+		other := None[string]()
+		// [A]ct
+		actual := opt.XOr(other)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, "ORIGINAL", actual.Unwrap())
+	})
 }
 
 func TestOptionChaining(t *testing.T) {
@@ -529,8 +575,7 @@ func TestOptionChaining(t *testing.T) {
 			}).
 			Map(func(value int) any {
 				return fmt.Sprintf("Value=%d", value)
-			}).
-			Option()
+			})
 		// [A]ssert
 		must.True(t, actual.IsSome())
 		must.Eq(t, "Value=15", actual.Unwrap())
@@ -545,7 +590,6 @@ func TestOptionChaining(t *testing.T) {
 			Map(func(value int) any {
 				return fmt.Sprintf("Value=%d", value)
 			}).
-			Option().
 			Filter(func(val any) bool {
 				switch v := val.(type) {
 				case string:
@@ -568,7 +612,6 @@ func TestOptionChaining(t *testing.T) {
 			Map(func(value int) any {
 				return fmt.Sprintf("Value=%d", value)
 			}).
-			Option().
 			Filter(func(val any) bool {
 				switch v := val.(type) {
 				case string:
@@ -592,8 +635,7 @@ func TestOptionChaining(t *testing.T) {
 			}).
 			Map(func(value int) any {
 				return fmt.Sprintf("Value=%d", value)
-			}).
-			Option()
+			})
 		// [A]ssert
 		must.True(t, actual.IsNone())
 	})
@@ -609,8 +651,7 @@ func TestOptionChaining(t *testing.T) {
 			}).
 			Map(func(value int) any {
 				return fmt.Sprintf("Value=%d", value)
-			}).
-			Option()
+			})
 		// [A]ssert
 		must.True(t, actual.IsNone())
 	})
@@ -658,4 +699,5 @@ func TestOptionChaining(t *testing.T) {
 		// [A]ssert
 		must.Eq(t, "OTHER", actual)
 	})
+
 }

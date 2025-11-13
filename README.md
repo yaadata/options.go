@@ -175,7 +175,6 @@ Option and Result
 **For Option[T]:**
 
 - Transformation:
-  - [ ] `Xor`
   - [ ] `Flatten`
   - [ ] `Replace`
 - Inspection:
@@ -218,7 +217,7 @@ Windows, Mac and Linux.
 
 ### Docs
 
-View dows
+View docs
 
 ```bash
 just doc

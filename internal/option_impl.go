@@ -94,11 +94,11 @@ func (o *option[T]) UnwrapOrDefault() T {
 	return *o.value
 }
 
-func (o *option[T]) AndThen(fn func(T) core.Option[any]) core.OptionChain[any] {
+func (o *option[T]) AndThen(fn func(T) core.Option[any]) core.Option[any] {
 	return OptionAndThen(o, fn)
 }
 
-func (o *option[T]) Map(fn func(T) any) core.OptionChain[any] {
+func (o *option[T]) Map(fn func(T) any) core.Option[any] {
 	return OptionMap(o, fn)
 }
 
@@ -143,4 +143,17 @@ func (o *option[T]) OrElse(fn func() core.Option[T]) core.Option[T] {
 		return fn()
 	}
 	return o
+}
+
+func (o *option[T]) XOr(optb core.Option[T]) core.Option[T] {
+	if o.IsSome() {
+		if optb.IsSome() {
+			return None[T]()
+		}
+		return o
+	}
+	if optb.IsSome() {
+		return optb
+	}
+	return None[T]()
 }
