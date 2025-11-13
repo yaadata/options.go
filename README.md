@@ -175,16 +175,10 @@ Option and Result
 **For Option[T]:**
 
 - Transformation:
-  - [ ] `Flatten`
   - [ ] `Replace`
+  - [ ] `Reduce`
 - Inspection:
   - [ ] `Inspect`
-- Combination:
-  - [ ] `Zip`
-  - [ ] `ZipWith`
-  - [ ] `Unzip`
-- Conversion:
-  - [ ] `Transpose`
 
 **For Result[T]:**
 
