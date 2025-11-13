@@ -5,6 +5,13 @@ import (
 	"github.com/yaadata/optionsgo/internal"
 )
 
+func ResultFlatten[T any](result core.Result[core.Result[T]]) core.Result[T] {
+	if result.IsError() {
+		return internal.Err[T](result.UnwrapErr())
+	}
+	return result.Unwrap()
+}
+
 func ResultAnd[T, V any](result core.Result[T], other core.Result[V]) core.Result[V] {
 	if result.IsOk() {
 		return other
@@ -91,4 +98,15 @@ func ResultMapOr[T, V any](result core.Result[T], fn func(inner T) V, or V) core
 //	transformed.Unwrap() // "EXPECTED"
 func ResultMapOrElse[T, V any](result core.Result[T], fn func(inner T) V, orElse func(error) V) core.Result[V] {
 	return internal.ResultMapOrElse(result, fn, orElse)
+}
+
+func ResultTranspose[T any](result core.Result[core.Option[T]]) core.Option[core.Result[T]] {
+	if result.IsError() {
+		return internal.Some(internal.Err[T](result.UnwrapErr()))
+	}
+	option := result.Unwrap()
+	if option.IsNone() {
+		return internal.None[core.Result[T]]()
+	}
+	return internal.Some(internal.Ok(option.Unwrap()))
 }

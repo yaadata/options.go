@@ -167,18 +167,6 @@ optionsgo.None[string]().IsNoneOr(func(s string) bool {
 
 See the respective test files
 
-## Roadmap
-
-The following are some possible candidates to expand the interface surface of
-Option and Result
-
-**For Result[T]:**
-
-- Transformation:
-  - [ ] `Flatten`
-- Conversion:
-  - [ ] `Transpose`
-
 ## Commands
 
 ### Test
