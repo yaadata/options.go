@@ -23,6 +23,7 @@ jobs:
           # These are regex patterns auto-wrapped in `^ $`.
           # Default: https://github.com/commitizen/conventional-commit-types
           types: |
+            breaking
             chore
             ci
             docs
