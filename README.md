@@ -26,7 +26,7 @@ The following tools are used in this project
 ## Installation
 
 ```bash
-go get github.com/yaadata/optionsgo
+go get github.com/yaadata/optionsgo@v0.2
 ```
 
 ## Quick Start
@@ -36,15 +36,16 @@ import (
     "errors"
     "fmt"
 
-    "github.com/yaadata/optionsgo"
+    "github.com/yaadata/optionsgo/core"
+    . "github.com/yaadata/optionsgo"
 )
 
 // Using Option
-func findUser(id int) optionsgo.Option[string] {
+func findUser(id int) core.Option[string] {
     if id < 0 {
-        return optionsgo.None[string]()
+        return None[string]()
     }
-    return optionsgo.Some("Alice")
+    return Some("Alice")
 }
 
 result := findUser(123)
@@ -53,11 +54,11 @@ if result.IsSome() {
 }
 
 // Using Result
-func divideNumbers(a, b int) optionsgo.Result[int] {
+func divideNumbers(a, b int) core.Result[int] {
     if b == 0 {
-        return optionsgo.Err[int](errors.New("division by zero"))
+        return Err[int](errors.New("division by zero"))
     }
-    return optionsgo.Ok(a / b)
+    return Ok(a / b)
 }
 
 result := divideNumbers(10, 2)
@@ -90,8 +91,44 @@ View the interface definition via html by running `just doc`
 ```go
 Ok[T](value T) Result[T]                           // Creates a Result containing a success value
 Err[T](err error) Result[T]                        // Creates a Result containing an error
-ResultFromReturn[T](value T, err error) Result[T]  // Converts Go's (T, error) pattern to Result
 ```
+
+### Extension Package
+
+The `extension` package provides additional utilities and advanced operations
+for `Option[T]` and `Result[T]` types. A brief example is shown below. Read
+ahead to see each functions capability.
+
+```go
+import ( 
+    "github.com/yaadata/optionsgo/extension"
+    . "github.com/yaadata/optionsgo"
+)
+
+// ...
+
+opt := Some(5)
+extension.OptionAndThen(opt(3), toOption)
+```
+
+| Function                                    | Description                                           | Example                                     |
+| ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| `ResultFromReturn[T](value T, err error)`   | Converts Go's `(value, error)` pattern to `Result[T]` | `extension.ResultFromReturn(fetchUser(id))` |
+| `ResultFlatten[T](result)`                  | Removes one level of nesting from `Result[Result[T]]` | `ResultFlatten(Ok(Ok(42))) // Ok(42)`       |
+| `ResultAnd[T, V](result, other)`            | Returns `other` if `result` is Ok, otherwise Err      | `ResultAnd(Ok(5), Ok("hi")) // Ok("hi")`    |
+| `ResultAndThen[T, V](result, fn)`           | Chains operations that return Results                 | `ResultAndThen(Ok(5), toResult)`            |
+| `ResultMap[T, V](result, fn)`               | Transforms an Ok value, preserves errors              | `ResultMap(Ok(3), toString) // Ok("3")`     |
+| `ResultMapOr[T, V](result, fn, or)`         | Transforms Ok value or returns default                | `ResultMapOr(Err(e), fn, "default")`        |
+| `ResultMapOrElse[T, V](result, fn, orElse)` | Transforms Ok or computes from error                  | `ResultMapOrElse(r, fn, errHandler)`        |
+| `ResultTranspose[T](result)`                | Converts `Result[Option[T]]` to `Option[Result[T]]`   | `ResultTranspose(Ok(Some(42)))`             |
+| `OptionFlatten[T](option)`                  | Removes one level of nesting from `Option[Option[T]]` | `OptionFlatten(Some(Some(42))) // Some(42)` |
+| `OptionAndThen[T, V](option, fn)`           | Chains operations that return Options                 | `OptionAndThen(Some(3), toOption)`          |
+| `OptionMap[T, V](option, fn)`               | Transforms a Some value, preserves None               | `OptionMap(Some(3), toString) // Some("3")` |
+| `OptionMapOr[T, V](option, fn, or)`         | Transforms Some value or returns default              | `OptionMapOr(None(), fn, "default")`        |
+| `OptionMapOrElse[T, V](option, fn, orElse)` | Transforms Some or computes alternative               | `OptionMapOrElse(opt, fn, compute)`         |
+| `OptionTranspose[T](option)`                | Converts `Option[Result[T]]` to `Result[Option[T]]`   | `OptionTranspose(Some(Ok(42)))`             |
+| `MustCast[T](original any)`                 | Casts value to type T, panics on failure              | `MustCast[int](value) // 42 or panic`       |
+| `CastOrZero[V](original any)`               | Casts value to type V, returns zero value on failure  | `CastOrZero[int]("text") // 0`              |
 
 ## Usage Examples
 
@@ -100,13 +137,16 @@ ResultFromReturn[T](value T, err error) Result[T]  // Converts Go's (T, error) p
 #### Creating and Checking Options
 
 ```go
+import (
+    . "github.com/yaadata/optionsgo"
+)
 // Create Some option
-opt := optionsgo.Some("hello")
+opt := Some("hello")
 opt.IsSome()  // true
 opt.IsNone()  // false
 
 // Create None option
-empty := optionsgo.None[string]()
+empty := None[string]()
 empty.IsSome()  // false
 empty.IsNone()  // true
 ```
@@ -114,7 +154,13 @@ empty.IsNone()  // true
 #### Conditional Checks with Predicates
 
 ```go
-opt := optionsgo.Some("SOME")
+import (
+    . "github.com/yaadata/optionsgo"
+)
+
+//... 
+
+opt := Some("SOME")
 
 // Check if Some and predicate passes
 opt.IsSomeAnd(func(s string) bool {
@@ -130,7 +176,7 @@ opt.IsNoneOr(func(s string) bool {
     return len(s) == 4
 }) // true (predicate passes)
 
-optionsgo.None[string]().IsNoneOr(func(s string) bool {
+None[string]().IsNoneOr(func(s string) bool {
     return false
 }) // true (is None)
 ```
