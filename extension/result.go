@@ -12,6 +12,19 @@ func ResultFlatten[T any](result core.Result[core.Result[T]]) core.Result[T] {
 	return result.Unwrap()
 }
 
+// ResultAnd returns other if result is Ok, otherwise returns the Err from result.
+// This is useful for chaining results where you want to proceed with the second
+// result only if the first one succeeded.
+//
+// Example:
+//
+//	result := internal.Ok(5)
+//	other := internal.Ok("OTHER")
+//	ResultAnd(result, other) // Returns Ok("OTHER")
+//
+//	result := internal.Err[int](errors.New("ERROR"))
+//	other := internal.Ok("OTHER")
+//	ResultAnd(result, other) // Returns Err("ERROR")
 func ResultAnd[T, V any](result core.Result[T], other core.Result[V]) core.Result[V] {
 	if result.IsOk() {
 		return other
@@ -19,7 +32,22 @@ func ResultAnd[T, V any](result core.Result[T], other core.Result[V]) core.Resul
 	return internal.Err[V](result.UnwrapErr())
 }
 
-func ResultAndThen[T, V any](result core.Result[T], fn func(inner T) core.Result[V]) core.Result[V] {
+// ResultAndThen applies fn to the value inside result if it is Ok, otherwise returns the Err.
+// This is useful for chaining operations where the next operation depends on the value
+// of the first result.
+//
+// Example:
+//
+//	result := internal.Ok(5)
+//	ResultAndThen(result, func(v int) core.Result[string] {
+//	  return internal.Ok(strings.Repeat("A", v))
+//	}) // Returns Ok("AAAAA")
+//
+//	result := internal.Err[int](errors.New("ERROR"))
+//	ResultAndThen(result, func(v int) core.Result[string] {
+//	  return internal.Ok(strings.Repeat("A", v))
+//	}) // Returns Err("ERROR")
+func ResultAndThen[T, V any](result core.Result[T], fn func(resultValue T) core.Result[V]) core.Result[V] {
 	if result.IsOk() {
 		return fn(result.Unwrap())
 	}

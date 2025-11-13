@@ -8,6 +8,7 @@ import (
 	"github.com/shoenig/test/must"
 
 	. "github.com/yaadata/optionsgo"
+	"github.com/yaadata/optionsgo/extension"
 )
 
 func TestResult_Error(t *testing.T) {
@@ -375,5 +376,42 @@ func TestResultMapFromReturn(t *testing.T) {
 		must.True(t, actual.IsOk())
 		actualValue := actual.Unwrap()
 		must.Nil(t, actualValue)
+	})
+}
+
+func TestResultChaining(t *testing.T) {
+	t.Parallel()
+	t.Run("Chaining Ok leads to Result", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Ok("parallel")
+		// [A]ct
+		actual := result.
+			Map(func(value string) any {
+				return len(value)
+			}).
+			Map(func(value any) any {
+				return extension.MustCast[int](value) * 10
+			})
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		must.Eq(t, 80, actual.Ok().Unwrap())
+	})
+
+	t.Run("Chaining Err leads to Err(_)", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Err[string](errors.New("parallel"))
+		// [A]ct
+		actual :=
+			result.
+				Map(func(value string) any {
+					return len(value)
+				}).
+				Map(func(value any) any {
+					return extension.MustCast[int](value) * 10
+				})
+		// [A]ssert
+		must.True(t, actual.IsError())
 	})
 }

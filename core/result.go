@@ -120,6 +120,22 @@ type Result[T any] interface {
 type ResultChain[T any] interface {
 	Inspect(fn func(value T)) Result[T]
 	InspectErr(fn func(err error)) Result[T]
+	// Map transforms a Result[T] to Result[any] by applying a function to the Ok value.
+	// If the result is Err, it returns Err with the same error unchanged.
+	//
+	// Example:
+	//
+	//  result := Ok("parallel")
+	//  transformed := result.Map(func(value string) any {
+	//      return len(value)
+	//  })
+	//  transformed.Unwrap() // 8
+	//
+	//  result := Err[string](errors.New("error"))
+	//  transformed := result.Map(func(value string) any {
+	//      return len(value)
+	//  })
+	//  transformed.IsError() // true
 	Map(fn func(value T) any) Result[any]
 	// MapErr applies a transformation function to the error if the Result is Err.
 	// If the Result is Ok, it returns the Result unchanged.
@@ -138,9 +154,63 @@ type ResultChain[T any] interface {
 	//  })
 	//  transformed.Unwrap() // 15 (unchanged)
 	MapErr(func(error) error) Result[T]
+	// MapOr transforms the Ok value using fn, or returns Ok(or) if the Result is Err.
+	// Unlike Map which propagates errors, MapOr always returns an Ok result.
+	//
+	// Example:
+	//
+	//  result := Ok(3)
+	//  transformed := result.MapOr(func(v int) any { return v * 2 }, 0)
+	//  transformed.Unwrap() // 6
+	//
+	//  result := Err[int](errors.New("error"))
+	//  transformed := result.MapOr(func(v int) any { return v * 2 }, 0)
+	//  transformed.Unwrap() // 0
 	MapOr(fn func(value T) any, or any) Result[any]
+	// MapOrElse transforms the Ok value using fn, or computes a value from the error using orElse.
+	// Always returns an Ok result, either from transforming the success value or handling the error.
+	//
+	// Example:
+	//
+	//  result := Ok(3)
+	//  transformed := result.MapOrElse(
+	//      func(v int) any { return v * 2 },
+	//      func(e error) any { return -1 },
+	//  )
+	//  transformed.Unwrap() // 6
+	//
+	//  result := Err[int](errors.New("error"))
+	//  transformed := result.MapOrElse(
+	//      func(v int) any { return v * 2 },
+	//      func(e error) any { return -1 },
+	//  )
+	//  transformed.Unwrap() // -1
 	MapOrElse(fn func(value T) any, orElse func(err error) any) Result[any]
+	// Or returns this Result if it is Ok, otherwise returns the provided alternative Result.
+	//
+	// Example:
+	//
+	//  result := Ok("value")
+	//  other := Ok("other")
+	//  result.Or(other).Unwrap() // "value"
+	//
+	//  result := Err[string](errors.New("error"))
+	//  other := Ok("other")
+	//  result.Or(other).Unwrap() // "other"
 	Or(res Result[T]) Result[T]
+	// OrElse returns this Result if it is Ok, otherwise calls fn with the error to produce an alternative Result.
+	//
+	// Example:
+	//
+	//  result := Ok("value")
+	//  result.OrElse(func(e error) Result[string] {
+	//      return Ok("fallback")
+	//  }).Unwrap() // "value"
+	//
+	//  result := Err[string](errors.New("error"))
+	//  result.OrElse(func(e error) Result[string] {
+	//      return Ok("fallback")
+	//  }).Unwrap() // "fallback"
 	OrElse(fn func(err error) Result[T]) Result[T]
 }
 
