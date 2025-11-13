@@ -117,6 +117,13 @@ func (o *option[T]) Filter(pred core.Predicate[T]) core.Option[T] {
 	return None[T]()
 }
 
+func (o *option[T]) Inspect(fn func(value T)) core.Option[T] {
+	if o.IsSome() {
+		fn(o.Unwrap())
+	}
+	return o
+}
+
 func (o *option[T]) OkOr(err error) core.Result[T] {
 	if o.IsSome() {
 		return Ok(*o.value)
@@ -152,6 +159,11 @@ func (o *option[T]) Reduce(optb core.Option[T], fn func(a, b T) T) core.Option[T
 	if optb.IsSome() {
 		return Some(fn(o.Unwrap(), optb.Unwrap()))
 	}
+	return o
+}
+
+func (o *option[T]) Replace(value T) core.Option[T] {
+	o.value = &value
 	return o
 }
 

@@ -256,6 +256,27 @@ type OptionChain[T any] interface {
 	//	result.IsNone() // returns true
 	Filter(pred Predicate[T]) Option[T]
 
+	// Inspect calls the provided function with the contained value if the option is Some,
+	// and returns the option unchanged for method chaining.
+	// If the option is None, the function is not called.
+	//
+	// This method is useful for performing side effects (like logging or debugging)
+	// without consuming the option or breaking the method chain.
+	//
+	// Example:
+	//	opt := Some(5)
+	//	result := opt.Inspect(func(value int) {
+	//	    fmt.Printf("Value: %d\n", value)
+	//	})
+	//	result.Unwrap() // returns 5, and "Value: 5" was printed
+	//
+	//	opt := None[int]()
+	//	result := opt.Inspect(func(value int) {
+	//	    fmt.Printf("Value: %d\n", value)
+	//	})
+	//	result.IsNone() // returns true, nothing was printed
+	Inspect(fn func(value T)) Option[T]
+
 	// Map transforms the value in the chain by applying a function.
 	// If the current chain represents Some, applies fn to the value and returns a new OptionChain with the transformed value.
 	// If the current chain represents None, returns an OptionChain representing None without calling fn.
@@ -332,6 +353,20 @@ type OptionChain[T any] interface {
 	//	})
 	//	result.Unwrap() // returns 5
 	Reduce(optb Option[T], fn func(a, b T) T) Option[T]
+
+	// Replace replaces the actual value in the option with the provided value,
+	// regardless of whether the option is Some or None.
+	// Always returns Some with the new value.
+	//
+	// Example:
+	//	opt := None[int]()
+	//	result := opt.Replace(33)
+	//	result.Unwrap() // returns 33
+	//
+	//	opt := Some(5)
+	//	result := opt.Replace(33)
+	//	result.Unwrap() // returns 33
+	Replace(value T) Option[T]
 
 	// XOr returns Some if exactly one of self or optb is Some, otherwise returns None.
 	// This implements exclusive OR logic for Options.

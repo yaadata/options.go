@@ -5,6 +5,39 @@ import (
 	"github.com/yaadata/optionsgo/internal"
 )
 
+// OptionFlatten removes one level of nesting from a nested Option.
+// It converts Option[Option[T]] into Option[T].
+//
+// If the outer Option is None, it returns None.
+// If the outer Option is Some(inner), it returns the inner Option.
+//
+// Note: OptionFlatten only flattens one level at a time. For deeply nested
+// Options, multiple calls are required.
+//
+// Examples:
+//
+//	// Some(Some(5)) -> Some(5)
+//	option := Some(Some(5))
+//	result := OptionFlatten(option) // Some(5)
+//
+//	// Some(None) -> None
+//	option := Some(None[int]())
+//	result := OptionFlatten(option) // None
+//
+//	// None -> None
+//	option := None[Option[int]]()
+//	result := OptionFlatten(option) // None
+//
+//	// Flattens only one level deep
+//	option := Some(Some(Some(5)))
+//	result := OptionFlatten(OptionFlatten(option)) // Some(5)
+func OptionFlatten[T any](option core.Option[core.Option[T]]) core.Option[T] {
+	if option.IsNone() {
+		return internal.None[T]()
+	}
+	return option.Unwrap()
+}
+
 // OptionAndThen transforms an Option[T] to Option[V] by applying a function to the contained value.
 // If the option is Some, applies fn to the value and returns Some with the transformed value.
 // If the option is None, returns None[V].
@@ -98,4 +131,42 @@ func OptionMapOrElse[T, V any](option core.Option[T], fn func(value T) V, orElse
 		return fn(option.Unwrap())
 	}
 	return orElse()
+}
+
+// OptionTranspose converts an Option[Result[T]] into a Result[Option[T]].
+// It "transposes" the nested types, swapping the order of Option and Result.
+//
+// This is useful when you have an optional result and want to convert it into
+// a result containing an optional value, making error handling the outer concern.
+//
+// Behavior:
+//   - None -> Ok(None)
+//   - Some(Ok(value)) -> Ok(Some(value))
+//   - Some(Err(error)) -> Err(error)
+//
+// Examples:
+//
+//	// None => Ok(None)
+//	option := None[Result[int]]()
+//	result := OptionTranspose(option) // Ok(None)
+//	result.IsOk() // true
+//
+//	// Some(Ok(5)) => Ok(Some(5))
+//	option := Some(Ok(5))
+//	result := OptionTranspose(option) // Ok(Some(5))
+//	result.Unwrap().Unwrap() // 5
+//
+//	// Some(Err) => Err
+//	option := Some(Err[int](errors.New("ERROR")))
+//	result := OptionTranspose(option) // Err("ERROR")
+//	result.IsError() // true
+func OptionTranspose[T any](option core.Option[core.Result[T]]) core.Result[core.Option[T]] {
+	if option.IsNone() {
+		return internal.Ok(internal.None[T]())
+	}
+	result := option.Unwrap()
+	if result.IsError() {
+		return internal.Err[core.Option[T]](result.UnwrapErr())
+	}
+	return internal.Ok(internal.Some(result.Unwrap()))
 }
