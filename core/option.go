@@ -256,6 +256,8 @@ type OptionChain[T any] interface {
 	//	result.IsNone() // returns true
 	Filter(pred Predicate[T]) Option[T]
 
+	Inspect(fn func(value T)) Option[T]
+
 	// Map transforms the value in the chain by applying a function.
 	// If the current chain represents Some, applies fn to the value and returns a new OptionChain with the transformed value.
 	// If the current chain represents None, returns an OptionChain representing None without calling fn.
