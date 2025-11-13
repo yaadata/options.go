@@ -161,3 +161,86 @@ func TestResultAndThen(t *testing.T) {
 		must.Eq(t, "ERROR", actual.UnwrapErr().Error())
 	})
 }
+
+func TestResultTranspose(t *testing.T) {
+	t.Parallel()
+	t.Run("Result Ok is Some(_)", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := internal.Ok(internal.Some(13))
+		// [A]ct
+		actual := extension.ResultTranspose(result)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 13, actual.Unwrap().Unwrap())
+	})
+
+	t.Run("Result Ok(None) is None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := internal.Ok(internal.None[int]())
+		// [A]ct
+		actual := extension.ResultTranspose(result)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("Result Ok(None) is None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := internal.Ok(internal.None[int]())
+		// [A]ct
+		actual := extension.ResultTranspose(result)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("Result Err() is Some(Err(_))", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := errors.New("msg")
+		result := internal.Err[core.Option[int]](expected)
+		// [A]ct
+		actual := extension.ResultTranspose(result)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, expected.Error(), actual.Unwrap().UnwrapErr().Error())
+	})
+}
+
+func TestResultFlatten(t *testing.T) {
+	t.Parallel()
+	t.Run("Ok returns in Ok Variant", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := internal.Ok(internal.Ok(5))
+		// [A]ct
+		actual := extension.ResultFlatten(result)
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		must.Eq(t, 5, actual.Unwrap())
+	})
+
+	t.Run("Ok returns in Ok Variant Only One Level Deep", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := internal.Ok(internal.Ok(internal.Ok(5)))
+		// [A]ct
+		actual := extension.ResultFlatten(extension.ResultFlatten(result))
+		// [A]ssert
+		must.True(t, actual.IsOk())
+		must.Eq(t, 5, actual.Unwrap())
+	})
+
+	t.Run("Err returns in Err Variant", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		err := errors.New("ERROR")
+		option := internal.Err[core.Result[int]](errors.New("ERROR"))
+		// [A]ct
+		actual := extension.ResultFlatten(option)
+		// [A]ssert
+		must.True(t, actual.IsError())
+		must.Eq(t, err, actual.UnwrapErr())
+	})
+}

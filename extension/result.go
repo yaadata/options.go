@@ -5,18 +5,46 @@ import (
 	"github.com/yaadata/optionsgo/internal"
 )
 
+// ResultFlatten converts a nested Result[Result[T]] into a single-level Result[T].
+// If the outer result is Err, returns Err with that error.
+// If the outer result is Ok, returns the inner result.
+// This function only flattens one level deep.
+//
+// Example:
+//
+//	result := internal.Ok(internal.Ok(5))
+//	flattened := extension.ResultFlatten(result)
+//	flattened.Unwrap() // 5
+//
+//	result := internal.Err[core.Result[int]](errors.New("ERROR"))
+//	flattened := extension.ResultFlatten(result)
+//	flattened.IsError() // true
+//	flattened.UnwrapErr() // "ERROR"
+//
+//	// For multiple levels, call ResultFlatten multiple times:
+//	result := internal.Ok(internal.Ok(internal.Ok(5)))
+//	flattened := extension.ResultFlatten(extension.ResultFlatten(result))
+//	flattened.Unwrap() // 5
+func ResultFlatten[T any](result core.Result[core.Result[T]]) core.Result[T] {
+	if result.IsError() {
+		return internal.Err[T](result.UnwrapErr())
+	}
+	return result.Unwrap()
+}
+
 // ResultAnd returns other if result is Ok, otherwise returns the Err from result.
 // This is useful for chaining results where you want to proceed with the second
 // result only if the first one succeeded.
 //
 // Example:
-//   result := internal.Ok(5)
-//   other := internal.Ok("OTHER")
-//   ResultAnd(result, other) // Returns Ok("OTHER")
 //
-//   result := internal.Err[int](errors.New("ERROR"))
-//   other := internal.Ok("OTHER")
-//   ResultAnd(result, other) // Returns Err("ERROR")
+//	result := internal.Ok(5)
+//	other := internal.Ok("OTHER")
+//	ResultAnd(result, other) // Returns Ok("OTHER")
+//
+//	result := internal.Err[int](errors.New("ERROR"))
+//	other := internal.Ok("OTHER")
+//	ResultAnd(result, other) // Returns Err("ERROR")
 func ResultAnd[T, V any](result core.Result[T], other core.Result[V]) core.Result[V] {
 	if result.IsOk() {
 		return other
@@ -29,15 +57,16 @@ func ResultAnd[T, V any](result core.Result[T], other core.Result[V]) core.Resul
 // of the first result.
 //
 // Example:
-//   result := internal.Ok(5)
-//   ResultAndThen(result, func(v int) core.Result[string] {
-//     return internal.Ok(strings.Repeat("A", v))
-//   }) // Returns Ok("AAAAA")
 //
-//   result := internal.Err[int](errors.New("ERROR"))
-//   ResultAndThen(result, func(v int) core.Result[string] {
-//     return internal.Ok(strings.Repeat("A", v))
-//   }) // Returns Err("ERROR")
+//	result := internal.Ok(5)
+//	ResultAndThen(result, func(v int) core.Result[string] {
+//	  return internal.Ok(strings.Repeat("A", v))
+//	}) // Returns Ok("AAAAA")
+//
+//	result := internal.Err[int](errors.New("ERROR"))
+//	ResultAndThen(result, func(v int) core.Result[string] {
+//	  return internal.Ok(strings.Repeat("A", v))
+//	}) // Returns Err("ERROR")
 func ResultAndThen[T, V any](result core.Result[T], fn func(resultValue T) core.Result[V]) core.Result[V] {
 	if result.IsOk() {
 		return fn(result.Unwrap())
@@ -117,4 +146,39 @@ func ResultMapOr[T, V any](result core.Result[T], fn func(inner T) V, or V) core
 //	transformed.Unwrap() // "EXPECTED"
 func ResultMapOrElse[T, V any](result core.Result[T], fn func(inner T) V, orElse func(error) V) core.Result[V] {
 	return internal.ResultMapOrElse(result, fn, orElse)
+}
+
+// ResultTranspose converts a Result[Option[T]] into an Option[Result[T]].
+// This transposes the type structure, swapping the positions of Result and Option.
+//
+// Conversion rules:
+//   - Result Ok(Some(v)) becomes Some(Ok(v))
+//   - Result Ok(None) becomes None
+//   - Result Err(e) becomes Some(Err(e))
+//
+// Example:
+//
+//	result := internal.Ok(internal.Some(13))
+//	transposed := extension.ResultTranspose(result)
+//	transposed.IsSome() // true
+//	transposed.Unwrap().Unwrap() // 13
+//
+//	result := internal.Ok(internal.None[int]())
+//	transposed := extension.ResultTranspose(result)
+//	transposed.IsNone() // true
+//
+//	result := internal.Err[core.Option[int]](errors.New("msg"))
+//	transposed := extension.ResultTranspose(result)
+//	transposed.IsSome() // true
+//	transposed.Unwrap().IsError() // true
+//	transposed.Unwrap().UnwrapErr() // "msg"
+func ResultTranspose[T any](result core.Result[core.Option[T]]) core.Option[core.Result[T]] {
+	if result.IsError() {
+		return internal.Some(internal.Err[T](result.UnwrapErr()))
+	}
+	option := result.Unwrap()
+	if option.IsNone() {
+		return internal.None[core.Result[T]]()
+	}
+	return internal.Some(internal.Ok(option.Unwrap()))
 }

@@ -203,4 +203,15 @@ func TestOptionTranspose(t *testing.T) {
 		must.True(t, actual.IsError())
 		must.Eq(t, "ERROR", actual.UnwrapErr().Error())
 	})
+
+	t.Run("Transpose back and forth works", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		option := internal.Some(internal.Ok(5))
+		result := extension.OptionTranspose(option)
+		// [A]ct
+		actual := extension.ResultTranspose(result)
+		// [A]ssert
+		must.True(t, option.Equal(actual))
+	})
 }
