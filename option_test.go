@@ -538,6 +538,33 @@ func TestOption_Some(t *testing.T) {
 		must.Eq(t, EXPECTED, actual.Unwrap())
 	})
 
+	t.Run("Reduce with None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[int]()
+		other := None[int]()
+		// [A]ct
+		actual := opt.Reduce(other, func(a, b int) int {
+			return a + b
+		})
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("Reduce with None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[int]()
+		other := Some(5)
+		// [A]ct
+		actual := opt.Reduce(other, func(a, b int) int {
+			return a + b
+		})
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 5, actual.Unwrap())
+	})
+
 	t.Run("XOr returns None when other is Some", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
@@ -559,6 +586,34 @@ func TestOption_Some(t *testing.T) {
 		// [A]ssert
 		must.True(t, actual.IsSome())
 		must.Eq(t, "ORIGINAL", actual.Unwrap())
+	})
+
+	t.Run("Reduce with None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some(5)
+		other := None[int]()
+		// [A]ct
+		actual := opt.Reduce(other, func(a, b int) int {
+			return a + b
+		})
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 5, actual.Unwrap())
+	})
+
+	t.Run("Reduce with None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some(10)
+		other := Some(5)
+		// [A]ct
+		actual := opt.Reduce(other, func(a, b int) int {
+			return a + b
+		})
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, 15, actual.Unwrap())
 	})
 }
 

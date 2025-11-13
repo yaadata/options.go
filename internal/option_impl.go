@@ -145,6 +145,16 @@ func (o *option[T]) OrElse(fn func() core.Option[T]) core.Option[T] {
 	return o
 }
 
+func (o *option[T]) Reduce(optb core.Option[T], fn func(a, b T) T) core.Option[T] {
+	if o.IsNone() {
+		return optb
+	}
+	if optb.IsSome() {
+		return Some(fn(o.Unwrap(), optb.Unwrap()))
+	}
+	return o
+}
+
 func (o *option[T]) XOr(optb core.Option[T]) core.Option[T] {
 	if o.IsSome() {
 		if optb.IsSome() {
