@@ -38,6 +38,31 @@ type Option[T any] interface {
 	//	result.IsNone() // returns true, returns the other None
 	And(other Option[T]) Option[T]
 
+	// Filter returns None if the option is None, otherwise calls the predicate
+	// with the wrapped value and returns:
+	//  - Some(t) if the predicate returns true
+	//  - None if the predicate returns false
+	//
+	// Example:
+	//	opt := Some(5)
+	//	result := opt.Filter(func(value int) bool {
+	//	    return value < 10
+	//	})
+	//	result.IsSome() // returns true
+	//
+	//	opt := Some(15)
+	//	result := opt.Filter(func(value int) bool {
+	//	    return value < 10
+	//	})
+	//	result.IsNone() // returns true
+	//
+	//	opt := None[int]()
+	//	result := opt.Filter(func(value int) bool {
+	//	    return value < 10
+	//	})
+	//	result.IsNone() // returns true
+	Filter(pred Predicate[T]) Option[T]
+
 	// IsSome returns true if the option contains a value (is Some).
 	//
 	// Example:

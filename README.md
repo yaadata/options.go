@@ -175,7 +175,6 @@ Option and Result
 **For Option[T]:**
 
 - Transformation:
-  - [ ] `Filter`
   - [ ] `Xor`
   - [ ] `Flatten`
   - [ ] `Replace`

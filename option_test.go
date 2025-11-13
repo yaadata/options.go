@@ -186,6 +186,19 @@ func TestOption_None(t *testing.T) {
 		must.Eq(t, expected, result)
 	})
 
+	t.Run("Filter on None returns None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := None[int]()
+		pred := func(value int) bool {
+			return value < 10
+		}
+		// [A]ct
+		actual := opt.Filter(pred)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
 	t.Run("And returns other option when called on None with None", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
@@ -235,6 +248,32 @@ func TestOption_Some(t *testing.T) {
 		// [A]ssert
 		must.True(t, opt.IsSome())
 		must.True(t, actual.Equal(opt))
+	})
+
+	t.Run("Filter on Some where predicate is true", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some(5)
+		pred := func(value int) bool {
+			return value < 10
+		}
+		// [A]ct
+		actual := opt.Filter(pred)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+	})
+
+	t.Run("Filter on Some where predicate is true", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		opt := Some(15)
+		pred := func(value int) bool {
+			return value < 10
+		}
+		// [A]ct
+		actual := opt.Filter(pred)
+		// [A]ssert
+		must.True(t, actual.IsNone())
 	})
 
 	t.Run("IsSome is true", func(t *testing.T) {
