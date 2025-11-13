@@ -10,8 +10,29 @@ type Result[T any] interface {
 	ResultChain[T]
 	ResultToOption[T]
 
+	// Expect returns the contained Ok value.
+	// Panics with the provided message if the result is Err.
+	//
+	// Example:
+	//
+	//  result := Ok(13)
+	//  value := result.Expect("ERROR_MESSAGE") // 13
+	//
+	//  result := Err[string](errors.New("err"))
+	//  value := result.Expect("TEST") // panics with "TEST"
 	Expect(msg string) T
 
+	// ExpectErr returns the contained Err value.
+	// Panics with the provided message if the result is Ok.
+	//
+	// Example:
+	//
+	//  result := Err[string](errors.New("err"))
+	//  err := result.ExpectErr("TEST") // returns the error
+	//  err.Error() // "err"
+	//
+	//  result := Ok(13)
+	//  err := result.ExpectErr("TEST") // panics with "TEST"
 	ExpectErr(msg string) error
 
 	// IsOk returns true if the result is Ok.
@@ -119,8 +140,39 @@ type Result[T any] interface {
 }
 
 type ResultChain[T any] interface {
+
+	// Inspect calls the provided function with the Ok value if the result is Ok,
+	// then returns the result unchanged for chaining. If the result is Err, the function is not called.
+	//
+	// Example:
+	//
+	//  result := Ok("msg")
+	//  result.Inspect(func(value string) {
+	//      fmt.Println(value) // prints "msg"
+	//  })
+	//
+	//  result := Err[string](errors.New("error"))
+	//  result.Inspect(func(value string) {
+	//      fmt.Println(value) // not called
+	//  })
 	Inspect(fn func(value T)) Result[T]
+
+	// InspectErr calls the provided function with the Err value if the result is Err,
+	// then returns the result unchanged for chaining. If the result is Ok, the function is not called.
+	//
+	// Example:
+	//
+	//  result := Err[string](errors.New("error"))
+	//  result.InspectErr(func(err error) {
+	//      fmt.Println(err) // prints the error
+	//  })
+	//
+	//  result := Ok("msg")
+	//  result.InspectErr(func(err error) {
+	//      fmt.Println(err) // not called
+	//  })
 	InspectErr(fn func(err error)) Result[T]
+
 	// Map transforms a Result[T] to Result[any] by applying a function to the Ok value.
 	// If the result is Err, it returns Err with the same error unchanged.
 	//
@@ -138,6 +190,7 @@ type ResultChain[T any] interface {
 	//  })
 	//  transformed.IsError() // true
 	Map(fn func(value T) any) Result[any]
+
 	// MapErr applies a transformation function to the error if the Result is Err.
 	// If the Result is Ok, it returns the Result unchanged.
 	//
@@ -155,6 +208,7 @@ type ResultChain[T any] interface {
 	//  })
 	//  transformed.Unwrap() // 15 (unchanged)
 	MapErr(func(error) error) Result[T]
+
 	// MapOr transforms the Ok value using fn, or returns Ok(or) if the Result is Err.
 	// Unlike Map which propagates errors, MapOr always returns an Ok result.
 	//
@@ -168,6 +222,7 @@ type ResultChain[T any] interface {
 	//  transformed := result.MapOr(func(v int) any { return v * 2 }, 0)
 	//  transformed.Unwrap() // 0
 	MapOr(fn func(value T) any, or any) Result[any]
+
 	// MapOrElse transforms the Ok value using fn, or computes a value from the error using orElse.
 	// Always returns an Ok result, either from transforming the success value or handling the error.
 	//
@@ -187,6 +242,7 @@ type ResultChain[T any] interface {
 	//  )
 	//  transformed.Unwrap() // -1
 	MapOrElse(fn func(value T) any, orElse func(err error) any) Result[any]
+
 	// Or returns this Result if it is Ok, otherwise returns the provided alternative Result.
 	//
 	// Example:
@@ -199,6 +255,7 @@ type ResultChain[T any] interface {
 	//  other := Ok("other")
 	//  result.Or(other).Unwrap() // "other"
 	Or(res Result[T]) Result[T]
+
 	// OrElse returns this Result if it is Ok, otherwise calls fn with the error to produce an alternative Result.
 	//
 	// Example:
