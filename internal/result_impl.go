@@ -41,6 +41,20 @@ func (r *result[T]) Ok() core.Option[T] {
 	return Some(*r.value)
 }
 
+func (r *result[T]) Expect(msg string) T {
+	if r.IsError() {
+		panic(msg)
+	}
+	return *r.value
+}
+
+func (r *result[T]) ExpectErr(msg string) error {
+	if r.IsOk() {
+		panic(msg)
+	}
+	return r.err
+}
+
 func (r *result[T]) Err() core.Option[error] {
 	if r.err == nil {
 		return None[error]()
@@ -68,6 +82,20 @@ func (r *result[T]) IsErrorAnd(pred core.Predicate[error]) bool {
 		return pred(r.err)
 	}
 	return false
+}
+
+func (r *result[T]) Inspect(fn func(value T)) core.Result[T] {
+	if r.IsOk() {
+		fn(r.Unwrap())
+	}
+	return r
+}
+
+func (r *result[T]) InspectErr(fn func(err error)) core.Result[T] {
+	if r.IsError() {
+		fn(r.UnwrapErr())
+	}
+	return r
 }
 
 func (r *result[T]) Map(fn func(value T) any) core.Result[any] {
@@ -104,17 +132,11 @@ func (r *result[T]) OrElse(fn func(err error) core.Result[T]) core.Result[T] {
 }
 
 func (r *result[T]) Unwrap() T {
-	if r.value == nil {
-		panic("cannot unwrap Err result to value")
-	}
-	return *r.value
+	return r.Expect("cannot unwrap Err result to value")
 }
 
 func (r *result[T]) UnwrapErr() error {
-	if r.err == nil {
-		panic("cannot unwrap Ok result to error")
-	}
-	return r.err
+	return r.ExpectErr("cannot unwrap Ok result to error")
 }
 
 func (r *result[T]) UnwrapOr(val T) T {

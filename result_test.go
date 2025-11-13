@@ -13,6 +13,67 @@ import (
 
 func TestResult_Error(t *testing.T) {
 	t.Parallel()
+	t.Run("Expect panics with the expected message", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := "TEST"
+		defer func() {
+			if rec := recover(); rec != nil {
+				r := extension.MustCast[string](rec)
+				must.Eq(t, expected, r)
+			} else {
+				t.Fail()
+			}
+		}()
+		result := Err[string](errors.New("err"))
+		// [A]ct
+		result.Expect(expected)
+	})
+
+	t.Run("ExpectErr does not panic", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := "TEST"
+		result := Err[string](errors.New("err"))
+		// [A]ct
+		var actual error
+		fn := func() {
+			actual = result.ExpectErr(expected)
+		}
+		// [A]ssert
+		must.NotPanic(t, fn)
+		must.Eq(t, "err", actual.Error())
+	})
+
+	t.Run("Inspect runs fn", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := "EXPECTED"
+		result := Ok(expected)
+		// [A]ct
+		var actual bool
+		fn := func(_ string) {
+			actual = true
+		}
+		result.Inspect(fn)
+		// [A]ssert
+		must.True(t, actual)
+	})
+
+	t.Run("InspectErr does not run fn", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Ok("msg")
+		var actual bool
+		// [A]ct
+		fn := func(_ error) {
+			actual = true
+		}
+		result.InspectErr(fn)
+		// [A]ssert
+		must.False(t, actual)
+	})
+
 	t.Run("IsOk returns false", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange
@@ -184,6 +245,62 @@ func TestResult_Error(t *testing.T) {
 
 func TestResult_Value(t *testing.T) {
 	t.Parallel()
+	t.Run("Expect returns the inner value", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := 13
+		result := Ok(expected)
+		// [A]ct
+		actual := result.Expect("ERROR_MESSAGE")
+		// [A]ssert
+		must.Eq(t, expected, actual)
+	})
+
+	t.Run("ExpectErr panics with the expected message", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		expected := "TEST"
+		defer func() {
+			if rec := recover(); rec != nil {
+				r := extension.MustCast[string](rec)
+				must.Eq(t, expected, r)
+			} else {
+				t.Fail()
+			}
+		}()
+		result := Ok(13)
+		// [A]ct
+		_ = result.ExpectErr(expected)
+	})
+
+	t.Run("Inspect runs fn", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Ok("msg")
+		// [A]ct
+		var actual bool
+		fn := func(value string) {
+			actual = true
+		}
+		result.Inspect(fn)
+		// [A]ssert
+		must.True(t, actual)
+	})
+
+	t.Run("InspectErr does not run fn", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		result := Ok("msg")
+		var actual bool
+		// [A]ct
+		fn := func(_ error) {
+			actual = true
+		}
+		result.InspectErr(fn)
+		// [A]ssert
+		must.False(t, actual)
+	})
+
 	t.Run("IsOk returns true", func(t *testing.T) {
 		t.Parallel()
 		// [A]rrange

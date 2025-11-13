@@ -176,11 +176,6 @@ Option and Result
 
 - Transformation:
   - [ ] `Flatten`
-- Inspection:
-  - [ ] `Inspect`
-  - [ ] `InspectErr`
-- Extraction:
-  - [ ] `Expect`
 - Conversion:
   - [ ] `Transpose`
 
