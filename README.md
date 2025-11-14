@@ -26,7 +26,7 @@ The following tools are used in this project
 ## Installation
 
 ```bash
-go get github.com/yaadata/optionsgo@v0.3.0
+go get github.com/yaadata/optionsgo@v0.4.0
 ```
 
 ## Quick Start
