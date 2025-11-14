@@ -121,6 +121,7 @@ extension.OptionAndThen(opt(3), toOption)
 | `ResultMapOr[T, V](result, fn, or)`         | Transforms Ok value or returns default                | `ResultMapOr(Err(e), fn, "default")`        |
 | `ResultMapOrElse[T, V](result, fn, orElse)` | Transforms Ok or computes from error                  | `ResultMapOrElse(r, fn, errHandler)`        |
 | `ResultTranspose[T](result)`                | Converts `Result[Option[T]]` to `Option[Result[T]]`   | `ResultTranspose(Ok(Some(42)))`             |
+| `OptionFromPointer[T](ptr *T)`              | Converts pointer to Option, None if nil               | `OptionFromPointer(&value) // Some(value)`  |
 | `OptionFlatten[T](option)`                  | Removes one level of nesting from `Option[Option[T]]` | `OptionFlatten(Some(Some(42))) // Some(42)` |
 | `OptionAndThen[T, V](option, fn)`           | Chains operations that return Options                 | `OptionAndThen(Some(3), toOption)`          |
 | `OptionMap[T, V](option, fn)`               | Transforms a Some value, preserves None               | `OptionMap(Some(3), toString) // Some("3")` |
