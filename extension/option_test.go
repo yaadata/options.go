@@ -215,3 +215,28 @@ func TestOptionTranspose(t *testing.T) {
 		must.True(t, option.Equal(actual))
 	})
 }
+
+func TestOptionFromPointer(t *testing.T) {
+	t.Parallel()
+	t.Run("Nil pointer returns None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		var ptr *string
+		// [A]ct
+		actual := extension.OptionFromPointer(ptr)
+		// [A]ssert
+		must.True(t, actual.IsNone())
+	})
+
+	t.Run("Nil pointer returns None", func(t *testing.T) {
+		t.Parallel()
+		// [A]rrange
+		value := "value"
+		ptr := &value
+		// [A]ct
+		actual := extension.OptionFromPointer(ptr)
+		// [A]ssert
+		must.True(t, actual.IsSome())
+		must.Eq(t, value, actual.Unwrap())
+	})
+}

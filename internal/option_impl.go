@@ -15,6 +15,10 @@ type option[T any] struct {
 	value *T
 }
 
+func OptionFromPointer[T any](ptr *T) core.Option[T] {
+	return &option[T]{value: ptr}
+}
+
 func None[T any]() core.Option[T] {
 	return &option[T]{value: nil}
 }

@@ -5,6 +5,23 @@ import (
 	"github.com/yaadata/optionsgo/internal"
 )
 
+// OptionFromPointer converts a pointer to an Option.
+// The Option retains the original pointer.
+//
+// Example:
+//
+//	var ptr *string // nil pointer
+//	opt := OptionFromPointer(ptr) // returns None
+//	opt.IsNone() // true
+//
+//	value := "hello"
+//	ptr = &value
+//	opt = OptionFromPointer(ptr) // returns Some("hello")
+//	opt.IsSome() // true
+func OptionFromPointer[T any](ptr *T) core.Option[T] {
+	return internal.OptionFromPointer(ptr)
+}
+
 // OptionFlatten removes one level of nesting from a nested Option.
 // It converts Option[Option[T]] into Option[T].
 //
